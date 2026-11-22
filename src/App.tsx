@@ -1,6 +1,7 @@
 import { createElement, useEffect, useMemo, useState } from "react";
 
 type IconName = "arrow" | "book" | "cube" | "menu" | "reset" | "spark" | "x";
+const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
@@ -82,7 +83,7 @@ function App() {
     if (!document.querySelector('script[data-model-viewer]')) {
       const script = document.createElement("script");
       script.type = "module";
-      script.src = "/assets/model-viewer.min.js";
+      script.src = asset("assets/model-viewer.min.js");
       script.dataset.modelViewer = "true";
       document.head.appendChild(script);
     }
@@ -129,7 +130,7 @@ function App() {
       </header>
 
       <section id="top" className="hero">
-        {!heroError ? <img className="hero-image" src="/assets/chess-king-hero.png" alt="An ornate king standing on an ancient stone chessboard" onError={() => setHeroError(true)} /> : <ImageFallback className="hero-fallback" />}
+        {!heroError ? <img className="hero-image" src={asset("assets/chess-king-hero.png")} alt="An ornate king standing on an ancient stone chessboard" onError={() => setHeroError(true)} /> : <ImageFallback className="hero-fallback" />}
         <div className="hero-shade" />
         <div className="hero-content">
           <div className="eyebrow"><span /> An interactive chronicle</div>
@@ -195,8 +196,8 @@ function App() {
         </div>
         <div className="model-shell">
           {useMemo(() => createElement("model-viewer", {
-            src: "/assets/chess-board.glb",
-            poster: "/assets/chess-king-hero.png",
+            src: asset("assets/chess-board.glb"),
+            poster: asset("assets/chess-king-hero.png"),
             alt: "Interactive three-dimensional historical chess artifact",
             "camera-controls": true,
             "auto-rotate": true,
@@ -240,7 +241,7 @@ function App() {
         <div className="card-grid">
           {inspirations.map((item, index) => <article className="inspiration-card" key={item.title}>
             <div className={`card-image ${item.pos}`}>
-              {!galleryError ? <img src="/assets/inspirations-grid.png" alt="" onError={() => setGalleryError(true)} /> : <ImageFallback />}
+              {!galleryError ? <img src={asset("assets/inspirations-grid.png")} alt="" onError={() => setGalleryError(true)} /> : <ImageFallback />}
               <span>{String(index + 1).padStart(2,"0")}</span>
             </div>
             <div className="card-copy"><small>{item.tag}</small><h3>{item.title}</h3><p>{item.text}</p></div>
