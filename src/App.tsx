@@ -65,6 +65,113 @@ const inspirations = [
 ] as const;
 
 const initialBoard = ["♜","♞","♝","♛","♚","♝","♞","♜","♟","♟","♟","♟","♟","♟","♟","♟",..."".padEnd(32).split(""),"♙","♙","♙","♙","♙","♙","♙","♙","♖","♘","♗","♕","♔","♗","♘","♖"];
+type Side = "w" | "b";
+type Move = { from: number; to: number };
+const whitePieces = "♙♘♗♖♕♔";
+const blackPieces = "♟♞♝♜♛♚";
+const pieceKinds: Record<string, string> = {
+  "♙":"p","♟":"p","♘":"n","♞":"n","♗":"b","♝":"b",
+  "♖":"r","♜":"r","♕":"q","♛":"q","♔":"k","♚":"k",
+};
+const pieceNames: Record<string, string> = {
+  "♙":"White pawn","♟":"Black pawn","♘":"White knight","♞":"Black knight",
+  "♗":"White bishop","♝":"Black bishop","♖":"White rook","♜":"Black rook",
+  "♕":"White queen","♛":"Black queen","♔":"White king","♚":"Black king",
+};
+const pieceValues: Record<string, number> = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 10000 };
+
+function sideOf(piece: string): Side | null {
+  if (whitePieces.includes(piece)) return "w";
+  if (blackPieces.includes(piece)) return "b";
+  return null;
+}
+
+function movesFor(board: string[], from: number): number[] {
+  const piece = board[from];
+  const side = sideOf(piece);
+  const kind = pieceKinds[piece];
+  if (!side || !kind) return [];
+  const row = Math.floor(from / 8);
+  const col = from % 8;
+  const moves: number[] = [];
+  const add = (nextRow: number, nextCol: number) => {
+    if (nextRow < 0 || nextRow > 7 || nextCol < 0 || nextCol > 7) return false;
+    const target = nextRow * 8 + nextCol;
+    if (!board[target]) {
+      moves.push(target);
+      return true;
+    }
+    if (sideOf(board[target]) !== side) moves.push(target);
+    return false;
+  };
+
+  if (kind === "p") {
+    const direction = side === "w" ? -1 : 1;
+    const startRow = side === "w" ? 6 : 1;
+    const one = (row + direction) * 8 + col;
+    if (row + direction >= 0 && row + direction <= 7 && !board[one]) {
+      moves.push(one);
+      const two = (row + direction * 2) * 8 + col;
+      if (row === startRow && !board[two]) moves.push(two);
+    }
+    for (const offset of [-1, 1]) {
+      const nextRow = row + direction;
+      const nextCol = col + offset;
+      if (nextRow >= 0 && nextRow <= 7 && nextCol >= 0 && nextCol <= 7) {
+        const target = nextRow * 8 + nextCol;
+        if (board[target] && sideOf(board[target]) !== side) moves.push(target);
+      }
+    }
+  } else if (kind === "n") {
+    [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]].forEach(([r,c]) => add(row + r, col + c));
+  } else if (kind === "k") {
+    for (let r = -1; r <= 1; r++) for (let c = -1; c <= 1; c++) if (r || c) add(row + r, col + c);
+  } else {
+    const directions: number[][] = [];
+    if (kind === "r" || kind === "q") directions.push([1,0],[-1,0],[0,1],[0,-1]);
+    if (kind === "b" || kind === "q") directions.push([1,1],[1,-1],[-1,1],[-1,-1]);
+    directions.forEach(([r,c]) => {
+      for (let distance = 1; distance < 8; distance++) {
+        if (!add(row + r * distance, col + c * distance)) break;
+      }
+    });
+  }
+  return moves;
+}
+
+function allMoves(board: string[], side: Side): Move[] {
+  return board.flatMap((piece, from) => sideOf(piece) === side
+    ? movesFor(board, from).map((to) => ({ from, to }))
+    : []);
+}
+
+function playMove(board: string[], move: Move): string[] {
+  const next = [...board];
+  const piece = next[move.from];
+  next[move.to] = piece;
+  next[move.from] = "";
+  const targetRow = Math.floor(move.to / 8);
+  if (pieceKinds[piece] === "p" && (targetRow === 0 || targetRow === 7)) {
+    next[move.to] = sideOf(piece) === "w" ? "♕" : "♛";
+  }
+  return next;
+}
+
+function chooseBotMove(board: string[]): Move | null {
+  const moves = allMoves(board, "b");
+  if (!moves.length) return null;
+  return moves
+    .map((move) => {
+      const captured = board[move.to];
+      const moving = board[move.from];
+      const row = Math.floor(move.to / 8);
+      const col = move.to % 8;
+      const center = 7 - (Math.abs(3.5 - row) + Math.abs(3.5 - col));
+      const capture = captured ? pieceValues[pieceKinds[captured]] * 10 - pieceValues[pieceKinds[moving]] : 0;
+      return { move, score: capture + center * 4 + Math.random() * 18 };
+    })
+    .sort((a, b) => b.score - a.score)[0].move;
+}
 
 function ImageFallback({ className = "" }: { className?: string }) {
   return <div className={`image-fallback ${className}`} role="img" aria-label="Decorative chess pattern"><span>♚</span></div>;
@@ -78,6 +185,9 @@ function App() {
   const [board, setBoard] = useState(initialBoard);
   const [selected, setSelected] = useState<number | null>(null);
   const [moves, setMoves] = useState(0);
+  const [turn, setTurn] = useState<Side>("w");
+  const [winner, setWinner] = useState<Side | null>(null);
+  const [lastMove, setLastMove] = useState<Move | null>(null);
 
   useEffect(() => {
     if (!document.querySelector('script[data-model-viewer]')) {
@@ -91,28 +201,58 @@ function App() {
 
   const current = eras[era];
   const progress = useMemo(() => `${((era + 1) / eras.length) * 100}%`, [era]);
+  const legalTargets = useMemo(() => selected === null ? [] : movesFor(board, selected), [board, selected]);
+
+  useEffect(() => {
+    if (turn !== "b" || winner) return;
+    const timer = window.setTimeout(() => {
+      const move = chooseBotMove(board);
+      if (!move) {
+        setWinner("w");
+        return;
+      }
+      const capturedKing = board[move.to] === "♔";
+      setBoard(playMove(board, move));
+      setLastMove(move);
+      setMoves((value) => value + 1);
+      if (capturedKing) setWinner("b");
+      else setTurn("w");
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, [board, turn, winner]);
 
   function movePiece(index: number) {
+    if (turn !== "w" || winner) return;
     if (selected === null) {
-      if (board[index]) setSelected(index);
+      if (sideOf(board[index]) === "w") setSelected(index);
       return;
     }
     if (selected === index) {
       setSelected(null);
       return;
     }
-    const next = [...board];
-    next[index] = next[selected];
-    next[selected] = "";
-    setBoard(next);
+    if (sideOf(board[index]) === "w") {
+      setSelected(index);
+      return;
+    }
+    if (!legalTargets.includes(index)) return;
+    const move = { from: selected, to: index };
+    const capturedKing = board[index] === "♚";
+    setBoard(playMove(board, move));
+    setLastMove(move);
     setSelected(null);
     setMoves((value) => value + 1);
+    if (capturedKing) setWinner("w");
+    else setTurn("b");
   }
 
   function resetBoard() {
     setBoard(initialBoard);
     setSelected(null);
     setMoves(0);
+    setTurn("w");
+    setWinner(null);
+    setLastMove(null);
   }
 
   return (
@@ -214,21 +354,38 @@ function App() {
 
       <section id="play" className="section play">
         <div className="section-intro">
-          <div><p className="kicker">The strategy table</p><h2>Make your <em>move.</em></h2></div>
-          <p>This open study board is a tactile demonstration, not a rules engine. Select a piece, then choose any destination.</p>
+          <div><p className="kicker">The strategy table</p><h2>Challenge the <em>machine.</em></h2></div>
+          <p>You command White. Select a piece to reveal its legal moves; the Black bot studies the position and answers automatically.</p>
         </div>
         <div className="play-layout">
           <div className="board-wrap">
-            <div className="board" role="grid" aria-label="Interactive demonstration chessboard">
-              {board.map((piece, index) => <button key={index} role="gridcell" aria-label={`${piece || "Empty"} square ${String.fromCharCode(97 + index % 8)}${8 - Math.floor(index / 8)}`} aria-pressed={selected === index} className={`focus-ring ${(Math.floor(index / 8) + index) % 2 ? "dark" : "light"} ${selected === index ? "selected" : ""}`} onClick={() => movePiece(index)}>{piece}</button>)}
+            <div className="player-strip bot"><span className={turn === "b" && !winner ? "thinking-dot" : ""}>♚</span><div><strong>Evolution Bot</strong><small>{turn === "b" && !winner ? "Calculating move…" : "Black · Tactical level"}</small></div></div>
+            <div className={`board ${turn === "b" ? "board-locked" : ""}`} role="grid" aria-label="Chessboard: you are White against the computer">
+              {board.map((piece, index) => {
+                const legal = legalTargets.includes(index);
+                const wasMoved = lastMove?.from === index || lastMove?.to === index;
+                return <button
+                  key={index}
+                  role="gridcell"
+                  aria-label={`${pieceNames[piece] || "Empty"} square ${String.fromCharCode(97 + index % 8)}${8 - Math.floor(index / 8)}${legal ? ", legal move" : ""}`}
+                  aria-pressed={selected === index}
+                  className={`focus-ring ${(Math.floor(index / 8) + index) % 2 ? "dark" : "light"} ${selected === index ? "selected" : ""} ${legal ? board[index] ? "legal capture" : "legal" : ""} ${wasMoved ? "last-move" : ""}`}
+                  onClick={() => movePiece(index)}
+                >{piece}</button>;
+              })}
             </div>
+            <div className="player-strip human"><span>♔</span><div><strong>You</strong><small>White · Your side</small></div></div>
           </div>
           <aside className="play-aside">
-            <p className="kicker">Open study · No. 01</p>
-            <h3>Think in positions,<br />not pieces.</h3>
-            <p>Every move changes the meaning of all 64 squares. Use this free-form study to compose a position of your own.</p>
-            <div className="move-counter"><span>Moves made</span><strong>{String(moves).padStart(2,"0")}</strong></div>
-            <button className="button button-ghost focus-ring" onClick={resetBoard}><Icon name="reset" /> Reset the board</button>
+            <p className="kicker">Quick match · You vs bot</p>
+            <h3>{winner ? (winner === "w" ? "You conquered the board." : "The machine prevails.") : turn === "w" ? "Your move, strategist." : "The bot is thinking."}</h3>
+            <p>Standard piece movement is enabled, with two-square opening pawn moves and automatic queen promotion. Capture the opposing king to win.</p>
+            <div className={`game-status ${winner ? "finished" : ""}`} aria-live="polite">
+              <span>{winner ? "Match complete" : turn === "w" ? "White to move" : "Black to move"}</span>
+              <strong>{winner ? (winner === "w" ? "Victory" : "Defeat") : turn === "w" ? "Your turn" : "Thinking…"}</strong>
+            </div>
+            <div className="move-counter"><span>Total turns</span><strong>{String(moves).padStart(2,"0")}</strong></div>
+            <button className="button button-ghost focus-ring" onClick={resetBoard}><Icon name="reset" /> {winner ? "Play again" : "Restart match"}</button>
           </aside>
         </div>
       </section>
