@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chess Evolution – Glass UI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Sticky Navigation -->
+  <nav class="navbar">
+    <ul>
+      <li><a href="#hero">Home</a></li>
+      <li><a href="#about">About Chess</a></li>
+      <li><a href="#timeline">Timeline</a></li>
+      <li><a href="#demo">Play Demo</a></li>
+      <li><a href="#inspirations">Game Inspirations</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero">
+    <div class="hero-overlay">
+      <h1>Chess Evolution – Game Inspirations</h1>
+      <p>From ancient battlefields to modern digital arenas</p>
+    </div>
+  </section>
+
+  <!-- About Chess -->
+  <section id="about" class="section">
+    <h2>About Chess</h2>
+    <p class="lead">
+      Chess traces its lineage to the Indian strategy game <strong>Chaturanga</strong> (c. 550 AD, Gupta empire). It spread to Persia as <strong>Shatranj</strong> (c. 570 AD) and entered Europe via Spain and Italy in the 9th–12th centuries. The modern rules—especially the queen’s powerful move—were solidified in the late‑15th century, and the first official World Championship was held in 1886. The game is now governed worldwide by the <a href="https://www.fide.com" target="_blank" rel="noopener">International Chess Federation (FIDE)</a>, founded in 1924.
+    </p>
+    <ul>
+      <li>c. 550 AD – Chaturanga appears in northern India.</li>
+      <li>c. 570 AD – Persian adaptation named Shatranj.</li>
+      <li>822 AD – First European mention in Cordoba, Spain.</li>
+      <li>1474 – Printing press popularises chess (Caxton).</li>
+      <li>1849 – Staunton set standardized.</li>
+      <li>1886 – First official World Chess Championship (Steinitz).</li>
+      <li>1924 – Formation of FIDE.</li>
+    </ul>
+  </section>
+
+  <!-- Timeline Section -->
+  <section id="timeline" class="section">
+    <h2>Timeline</h2>
+    <div class="timeline-tabs">
+      <button class="tab active" data-stage="chaturanga">Chaturanga</button>
+      <button class="tab" data-stage="shatranj">Shatranj</button>
+      <button class="tab" data-stage="modern">Modern Chess</button>
+    </div>
+    <p id="stage-description" class="stage-description">
+      Chaturanga, the oldest known predecessor of chess, was played on an 8×8 board with pieces representing infantry, cavalry, elephants, and chariots.
+    </p>
+  </section>
+
+  <!-- Play Demo Section -->
+  <section id="demo" class="section">
+    <h2>Play Demo</h2>
+    <div class="glass-panel demo-panel">
+      <!-- 3‑D model (lazy‑loaded) -->
+      <model-viewer src="assets/chess-board.glb"
+                    poster="assets/board-perspective.jpg"
+                    alt="3‑D chess board"
+                    ar
+                    auto-rotate
+                    camera-controls
+                    loading="lazy">
+      </model-viewer>
+      <!-- Placeholder 2‑D board -->
+      <pre class="board-2d">
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+            
+        
+       
+       
+♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+      </pre>
+    </div>
+  </section>
+
+  <!-- Game Inspirations -->
+  <section id="inspirations" class="section">
+    <h2>Game Inspirations</h2>
+    <button class="add-btn" id="openModalBtn">Add New Inspiration</button>
+    <div class="grid" id="inspirationsGrid">
+      <div class="card glass">
+        <img src="assets/cod.jpg" alt="Call of Duty" />
+        <p>Call of Duty – tactical combat echoing ancient battlefield tactics.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/godofwar.jpg" alt="God of War" />
+        <p>God of War – mythic warfare reminiscent of early chess narratives.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/raji.jpg" alt="Raji" />
+        <p>Raji – Indian mythology and strategic combat, a spiritual descendant of Chaturanga.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/indian-games.jpg" alt="Indian board games" />
+        <p>Traditional Indian board games that pre‑date chess.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/chinese-games.jpg" alt="Chinese warfare games" />
+        <p>Chinese war‑games that share the same grid‑based tactical roots.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/shakuni-dice.jpg" alt="Shakuni's dice" />
+        <p>Shakuni’s dice – a legendary device from the Mahabharata influencing randomised combat.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Add Inspiration Modal -->
+  <div class="modal" id="addModal">
+    <div class="modal-content">
+      <span class="close" id="closeModalBtn">&times;</span>
+      <h3>Add New Game Inspiration</h3>
+      <form id="addForm">
+        <label for="titleInput">Title</label>
+        <input type="text" id="titleInput" required />
+        <label for="imgInput">Image URL (or data‑uri)</label>
+        <input type="url" id="imgInput" required />
+        <label for="descInput">Description</label>
+        <textarea id="descInput" rows="3" required></textarea>
+        <button type="submit">Add</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Sources: <a href="https://artsandculture.google.com/story/a-short-history-of-chess-international-chess-federation-fide/KgXBG5vqmqonQw?hl=en" target="_blank">Google Arts & Culture</a>, <a href="https://v-iksproject.netlify.app" target="_blank">v‑IKS project</a>, Lovable preview (private).</p>
+  </footer>
+
+  <script src="interactive.js"></script>
+</body>
+</html>
+  <nav class="navbar">
+    <ul>
+      <li><a href="#hero">Home</a></li>
+      <li><a href="#about">About Chess</a></li>
+      <li><a href="#timeline">Timeline</a></li>
+      <li><a href="#demo">Play Demo</a></li>
+      <li><a href="#inspirations">Game Inspirations</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero">
+    <div class="hero-overlay">
+      <h1>Chess Evolution – Game Inspirations</h1>
+      <p>From ancient battlefields to modern digital arenas</p>
+    </div>
+  </section>
+
+  <!-- About Chess -->
+  <section id="about" class="section">
+    <h2>About Chess</h2>
+    <p class="lead">
+      Chess traces its lineage to the Indian strategy game <strong>Chaturanga</strong> (6th‑century CE). It spread to Persia, becoming <strong>Shatranj</strong>, and later entered Europe via the Islamic world. The modern rules we know today were standardized in the 19th century and are governed by the <a href="https://www.fide.com" target="_blank" rel="noopener">International Chess Federation (FIDE)</a>.
+    </p>
+    <p>
+      <em>Key milestones:</em>
+    </p>
+    <ul>
+      <li>c. 600 CE – Chaturanga appears in the Indian subcontinent.</li>
+      <li>c. 700 CE – Persian adaptation named Shatranj.</li>
+      <li>13th century – Shatranj introduced to Europe through Spain and Italy.</li>
+      <li>1475 – The ‘queen’ gains its modern powerful moves.</li>
+      <li>1886 – First official World Chess Championship.</li>
+      <li>1924 – Formation of FIDE.</li>
+    </ul>
+  </section>
+
+  <!-- Timeline Section -->
+  <section id="timeline" class="section">
+    <h2>Timeline</h2>
+    <div class="timeline-tabs">
+      <button class="tab active" data-stage="chaturanga">Chaturanga</button>
+      <button class="tab" data-stage="shatranj">Shatranj</button>
+      <button class="tab" data-stage="modern">Modern Chess</button>
+    </div>
+    <p id="stage-description" class="stage-description">
+      Chaturanga, the oldest known predecessor of chess, was played on an 8×8 board with pieces representing infantry, cavalry, elephants, and chariots.
+    </p>
+  </section>
+
+  <!-- Play Demo Section -->
+  <section id="demo" class="section">
+    <h2>Play Demo</h2>
+    <div class="glass-panel demo-panel">
+      <!-- 3‑D model (lazy‑loaded) -->
+      <model-viewer src="assets/chess-board.glb"
+                    poster="assets/board-perspective.jpg"
+                    alt="3‑D chess board"
+                    ar
+                    auto-rotate
+                    camera-controls
+                    loading="lazy">
+      </model-viewer>
+      <!-- Placeholder 2‑D board -->
+      <pre class="board-2d">
+♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+            
+        
+       
+       
+♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+      </pre>
+    </div>
+  </section>
+
+  <!-- Game Inspirations -->
+  <section id="inspirations" class="section">
+    <h2>Game Inspirations</h2>
+    <div class="grid">
+      <div class="card glass">
+        <img src="assets/cod.jpg" alt="Call of Duty" />
+        <p>Call of Duty – tactical combat echoing ancient battlefield tactics.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/godofwar.jpg" alt="God of War" />
+        <p>God of War – mythic warfare reminiscent of early chess narratives.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/raji.jpg" alt="Raji" />
+        <p>Raji – Indian mythology and strategic combat, a spiritual descendant of Chaturanga.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/indian-games.jpg" alt="Indian board games" />
+        <p>Traditional Indian board games that pre‑date chess.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/chinese-games.jpg" alt="Chinese warfare games" />
+        <p>Chinese war‑games that share the same grid‑based tactical roots.</p>
+      </div>
+      <div class="card glass">
+        <img src="assets/shakuni-dice.jpg" alt="Shakuni's dice" />
+        <p>Shakuni’s dice – a legendary device from the Mahabharata influencing randomised combat.</p>
+      </div>
+    </div>
+  </section>
+
+  <script src="interactive.js"></script>
+</body>
+</html>
